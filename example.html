@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<title></title>
+		<style type="text/css">
+			html {
+				background : #000;
+			}
+
+			html, body {
+				margin  : 0;
+				padding : 0;
+			}
+
+			div {
+				margin      : 30px;
+				color       : #fff;
+				font-family : monospace;
+				font-size   : 10px;
+			}
+
+			canvas {
+				display: block;
+			}
+		</style>
+		<script type="text/javascript" src="Terrain.js"></script>
+
+		<script>
+		function generate( map_size, noise, pixel_size ) {
+			var div    = document.createElement('div'),
+				canvas = document.createElement('canvas'),
+				ctx    = canvas.getContext('2d');
+			
+			div.appendChild( document.createTextNode('size: ' + map_size))
+			div.appendChild( canvas );
+
+			document.body.appendChild(div);
+
+			var terrain = new Terrain({
+				size : map_size + 1,
+				noise  : noise
+			});
+
+			canvas.width  = terrain.size * pixel_size;
+			canvas.height = terrain.size * pixel_size;
+
+			terrain.eachNode(function( value, x, y ){
+				ctx.beginPath();
+				var c = Math.floor( value * 255 );
+				ctx.fillStyle = 'rgb(' + c + ', ' + c + ',' + c + ')';
+				ctx.rect( x * pixel_size, y * pixel_size, pixel_size, pixel_size );
+				ctx.fill();
+				ctx.closePath();
+			});
+		}
+
+		function init(){
+			generate( 8, 2, 32 );
+			generate( 32, 5, 8 );
+			generate( 512, 10, 1 );
+		}
+
+		</script>
+	</head>
+	<body onload="init()"></body>
+</html>
