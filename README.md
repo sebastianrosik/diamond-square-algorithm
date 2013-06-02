@@ -1,4 +1,4 @@
-DiamondSquareAlgorithm
+Diamond Square Algorithm
 ======================
 Generates a terrain by using a diamond square algorithm. [See more info](http://en.wikipedia.org/wiki/Diamond-square_algorithm).
 
