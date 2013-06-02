@@ -6,7 +6,7 @@ Generates a terrain by using a diamond square algorithm. [See more info](http://
 Usage:
 -----
 
-A Terrain instance returns a two dimensional Array with value from 0 to 1
+A Terrain instance returns a two dimensional Array with values from 0 to 1
 
 ```javascript
 var terrain = new Terrain({
