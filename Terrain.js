@@ -20,6 +20,8 @@ terrain.eachNode(function( value, x, y ){
 
 **/
 var Terrain = function( options ) {
+	var self = this;
+
 	this.size = 9;
 	this.noise = 0.1;
 	this.deviation = 5;
@@ -27,15 +29,80 @@ var Terrain = function( options ) {
 
 	for ( var i in options ) this[ i ] = options[ i ];
 
+	if ( typeof this.map === 'undefined' ) {
+		this.map = this.createMap();
+	}
+
 	this.generate();
+
+	this.map.EDGE_TOP = 0x0;
+	this.map.EDGE_RIGHT = 0x1;
+	this.map.EDGE_BOTTOM = 0x2;
+	this.map.EDGE_LEFT = 0x3;
+
+	this.map.FLIP_NONE = 0x0;
+	this.map.FLIP_VERT = 0x1;
+	this.map.FLIP_HORZ = 0x2;
 
 	this.map.size = this.size;
 	this.map.eachNode = this.eachNode;
+	this.map.getEdge = function( edge ) {
+		return self.getEdge( edge );
+	}
 
 	return this.map;
 }
 
 Terrain.prototype = {
+
+	getEdge: function( edge, flip ) {
+		var node, x, y,
+			chunk = this.createMap();
+
+		for ( x = 0; x < this.size; ++x ) {
+			for ( y = 0; y < this.size; ++y ) {
+				node = this.map[ x ] && this.map[ x ][ y ];
+
+				if ( edge === this.map.EDGE_TOP && y === 0 ) {
+					chunk[ x ][ y ] = this.map[ x ][ y ];
+				} else if ( edge === this.map.EDGE_BOTTOM && y === this.size - 1 ) {
+					chunk[ x ][ y ] = this.map[ x ][ y ];
+				} else if ( edge === this.map.EDGE_LEFT && x === 0 ) {
+					chunk[ x ][ y ] = this.map[ x ][ y ];
+				} else if ( edge === this.map.EDGE_RIGHT && x === this.size - 1 ) {
+					chunk[ x ][ y ] = this.map[ x ][ y ];
+				}
+			}
+		}
+
+		if ( flip === this.FLIP_VERT ) {
+			for ( x = 0; x < this.size; ++x ) {
+				chunk[ x ].reverse();
+			}
+			chunk.reverse();
+		}
+
+		if ( flip === this.FLIP_HORZ ) {
+			chunk.reverse();
+		}
+
+		return chunk;
+	},
+
+	createMap: function() {
+		var map = [];
+		var w = this.size;
+		while ( w-- ) {
+			var h = this.size;
+			if ( typeof map[ w ] == 'undefined' )
+				map[ w ] = [];
+			while ( h-- ) {
+				map[ w ][ h ] = null;
+			}
+		}
+		return map;
+	},
+
 	// Iterates through each node and 
 	// executes the given function (fn) 
 	// with three arguments:
@@ -52,18 +119,6 @@ Terrain.prototype = {
 
 	// Generates the terrain
 	generate: function() {
-		this.map = [];
-
-		var w = this.size;
-		while ( w-- ) {
-			var h = this.size;
-			if ( typeof this.map[ w ] == 'undefined' )
-				this.map[ w ] = [];
-			while ( h-- ) {
-				this.map[ w ][ h ] = null;
-			}
-		}
-
 		this.set( 0, 0, Math.random() * 1 );
 		this.set( this.size - 1, 0, Math.random() * 1 );
 		this.set( this.size - 1, this.size - 1, Math.random() * 1 );
@@ -123,7 +178,9 @@ Terrain.prototype = {
 				bt_lf = this.get( x, y + s ),
 				bt_rg = this.get( x + s, y + s );
 
-			midpoint_value = this.constrain( this.average( tp_lf, tp_rg, bt_rg, bt_lf ) + this.displace( half_size + half_size, roughness ) )
+			midpoint_value = this.average( tp_lf, tp_rg, bt_rg, bt_lf );
+			midpoint_value += this.displace( half_size + half_size, roughness );
+			midpoint_value = this.constrain( midpoint_value )
 
 			this.set( midpoint_x, midpoint_y, midpoint_value );
 
